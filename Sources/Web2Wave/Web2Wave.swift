@@ -7,25 +7,18 @@
 
 import Foundation
 
-struct Web2WaveSubscriptionStatus {
-    let user_id: String
-    let user_email: String
-    let subscriptions: [[String: Any]]
-}
-
-public class Web2Wave {
+public class Web2Wave: @unchecked Sendable {
     
-    @MainActor public static let shared = Web2Wave()
+    public static let shared = Web2Wave()
     
-    public var baseURL: URL?
+    private let baseURL: URL = URL(string: "https://api.web2wave.com")!
     public var apiKey: String?
-        
+            
     public func fetchSubscriptionStatus(userID: String) async -> [String: Any]? {
 
-        assert(nil != baseURL, "You have to initialize base URL before use")
         assert(nil != apiKey, "You have to initialize apiKey before use")
         
-        var urlComponents = URLComponents(url: baseURL!.appendingPathComponent("api")
+        var urlComponents = URLComponents(url: baseURL.appendingPathComponent("api")
                                                             .appendingPathComponent("user")
                                                             .appendingPathComponent("subscriptions"),
                                           resolvingAgainstBaseURL: false)
@@ -81,12 +74,23 @@ public class Web2Wave {
         return false
     }
 
+    public func fetchSubscriptions(userID: String) async -> [[String: Any]]? {
+        
+        if let response = await fetchSubscriptionStatus(userID: userID) {
+            
+            if let subscriptions = response["subscription"] as? [[String: Any]] {
+                return subscriptions
+            }
+        }
+        
+        return nil
+    }
+
     public func fetchUserProperties(userID: String) async -> [String: String]? {
 
-        assert(nil != baseURL, "You have to initialize base URL before use")
         assert(nil != apiKey, "You have to initialize apiKey before use")
         
-        var urlComponents = URLComponents(url: baseURL!.appendingPathComponent("api")
+        var urlComponents = URLComponents(url: baseURL.appendingPathComponent("api")
                                                             .appendingPathComponent("user")
                                                             .appendingPathComponent("properties"),
                                           resolvingAgainstBaseURL: false)
@@ -130,10 +134,9 @@ public class Web2Wave {
 
     public func updateUserProperty(userID: String, property: String, value: String) async -> Result<Void, Error> {
         
-        assert(nil != baseURL, "You have to initialize base URL before use")
         assert(nil != apiKey, "You have to initialize apiKey before use")
         
-        var urlComponents = URLComponents(url: baseURL!.appendingPathComponent("api")
+        var urlComponents = URLComponents(url: baseURL.appendingPathComponent("api")
                                                             .appendingPathComponent("user")
                                                             .appendingPathComponent("properties"),
                                           resolvingAgainstBaseURL: false)
@@ -193,6 +196,15 @@ public class Web2Wave {
         }
     }
 
+    public func setRevenuecatProfileID(appUserID: String, revenueCatProfileID: String) async -> Result<Void, Error> {
+        return await self.updateUserProperty(userID: appUserID, property: "revenuecat_profile_id", value: revenueCatProfileID)
+    }
 
-    
+    public func setAdaptyProfileID(appUserID: String, adaptyProfileID: String) async -> Result<Void, Error> {
+        return  await updateUserProperty(userID: appUserID, property: "adapty_profile_id", value: adaptyProfileID)
+    }
+
+    public func setQonversionProfileID(appUserID: String, qonversionProfileID: String) async -> Result<Void, Error> {
+        return  await updateUserProperty(userID: appUserID, property: "qonversion_profile_id", value: qonversionProfileID)
+    }
 }
