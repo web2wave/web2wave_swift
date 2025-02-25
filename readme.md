@@ -20,7 +20,7 @@ Add the following to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/IgorKamenev/web2wave_swift.git", from: "1.0.0")
+    .package(url: "https://github.com/web2wave/web2wave_swift.git", from: "1.0.0")
 ]
 ```
 
