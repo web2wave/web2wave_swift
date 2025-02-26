@@ -38,23 +38,23 @@ Web2Wave.shared.apiKey = "your-api-key"
 
 ```swift
 // Fetch subscriptions
-let status = await Web2Wave.shared.fetchSubscriptions(userID: "user123")
+let status = await Web2Wave.shared.fetchSubscriptions(web2waveUserId: "user123")
 
 // Check if user has an active subscription
-let isActive = await Web2Wave.shared.hasActiveSubscription(userID: "user123")
+let isActive = await Web2Wave.shared.hasActiveSubscription(web2waveUserId: "user123")
 ```
 
 ### Managing User Properties
 
 ```swift
 // Fetch user properties
-if let properties = await Web2Wave.shared.fetchUserProperties(userID: "user123") {
+if let properties = await Web2Wave.shared.fetchUserProperties(web2waveUserId: "user123") {
     print("User properties: \(properties)")
 }
 
 // Update a user property
 let result = await Web2Wave.shared.updateUserProperty(
-    userID: "user123",
+    web2waveUserId: "user123",
     property: "preferredTheme",
     value: "dark"
 )
@@ -72,7 +72,7 @@ case .failure(let error):
 
 // Save Adapty profileID
 let result = await Web2Wave.shared.setAdaptyProfileID(
-    appUserID: "user123", 
+    web2waveUserId: "user123", 
     adaptyProfileID: "{adaptyProfileID}"
 )
 
@@ -86,13 +86,13 @@ case .failure(let error):
 
 // Save Revenue Cat profileID
 let _ = await Web2Wave.shared.setRevenuecatProfileID(
-    appUserID: "user123",
+    web2waveUserId: "user123",
     revenueCatProfileID: "{revenueCatProfileID}"
 )
 
 // Save Qonversion profileID
 let _ = await Web2Wave.shared.setQonversionProfileID(
-    appUserID: "user123",
+    web2waveUserId: "user123",
     qonversionProfileID: "{qonversionProfileID}"
 )
 
@@ -106,25 +106,25 @@ The singleton instance of the Web2Wave client.
 
 ### Methods
 
-#### `fetchSubscriptionStatus(userID: String) async -> [String: Any]?`
+#### `fetchSubscriptionStatus(web2waveUserId: String) async -> [String: Any]?`
 Fetches the subscription status for a given user ID.
 
-#### `hasActiveSubscription(userID: String) async -> Bool`
+#### `hasActiveSubscription(web2waveUserId: String) async -> Bool`
 Checks if the user has an active subscription (including trial status).
 
-#### `fetchUserProperties(userID: String) async -> [String: String]?`
+#### `fetchUserProperties(web2waveUserId: String) async -> [String: String]?`
 Retrieves all properties associated with a user.
 
-#### `updateUserProperty(userID: String, property: String, value: String) async -> Result<Void, Error>`
+#### `updateUserProperty(web2waveUserId: String, property: String, value: String) async -> Result<Void, Error>`
 Updates a specific property for a user.
 
-#### `setRevenuecatProfileID(appUserID: String, revenueCatProfileID: String) -> Void`
+#### `setRevenuecatProfileID(web2waveUserId: String, revenueCatProfileID: String) -> Void`
 Set Revenuecat profileID
 
-#### `setAdaptyProfileID(appUserID: String, adaptyProfileID: String) -> Void`
+#### `setAdaptyProfileID(web2waveUserId: String, adaptyProfileID: String) -> Void`
 Set Adapty profileID
 
-#### `setQonversionProfileID(appUserID: String, qonversionProfileID: String) -> Void`
+#### `setQonversionProfileID(web2waveUserId: String, qonversionProfileID: String) -> Void`
 Set Qonversion ProfileID
 
 ## Requirements

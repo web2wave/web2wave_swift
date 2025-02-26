@@ -14,7 +14,7 @@ public class Web2Wave: @unchecked Sendable {
     private let baseURL: URL = URL(string: "https://api.web2wave.com")!
     public var apiKey: String?
             
-    public func fetchSubscriptionStatus(userID: String) async -> [String: Any]? {
+    public func fetchSubscriptionStatus(web2waveUserId: String) async -> [String: Any]? {
 
         assert(nil != apiKey, "You have to initialize apiKey before use")
         
@@ -23,7 +23,7 @@ public class Web2Wave: @unchecked Sendable {
                                                             .appendingPathComponent("subscriptions"),
                                           resolvingAgainstBaseURL: false)
 
-        urlComponents?.queryItems = [URLQueryItem(name: "user", value: userID)]
+        urlComponents?.queryItems = [URLQueryItem(name: "user", value: web2waveUserId)]
 
         guard let url = urlComponents?.url else {
             fatalError("Invalid URL components")
@@ -53,9 +53,9 @@ public class Web2Wave: @unchecked Sendable {
         }
     }
     
-    public func hasActiveSubscription(userID: String) async -> Bool {
+    public func hasActiveSubscription(web2waveUserId: String) async -> Bool {
         
-        if let subscriptionStatus = await fetchSubscriptionStatus(userID: userID) {
+        if let subscriptionStatus = await fetchSubscriptionStatus(web2waveUserId: web2waveUserId) {
             
             guard let subscriptions = subscriptionStatus["subscription"] as? [[String: Any]]
             else {
@@ -74,9 +74,9 @@ public class Web2Wave: @unchecked Sendable {
         return false
     }
 
-    public func fetchSubscriptions(userID: String) async -> [[String: Any]]? {
+    public func fetchSubscriptions(web2waveUserId: String) async -> [[String: Any]]? {
         
-        if let response = await fetchSubscriptionStatus(userID: userID) {
+        if let response = await fetchSubscriptionStatus(web2waveUserId: web2waveUserId) {
             
             if let subscriptions = response["subscription"] as? [[String: Any]] {
                 return subscriptions
@@ -86,7 +86,7 @@ public class Web2Wave: @unchecked Sendable {
         return nil
     }
 
-    public func fetchUserProperties(userID: String) async -> [String: String]? {
+    public func fetchUserProperties(web2waveUserId: String) async -> [String: String]? {
 
         assert(nil != apiKey, "You have to initialize apiKey before use")
         
@@ -95,7 +95,7 @@ public class Web2Wave: @unchecked Sendable {
                                                             .appendingPathComponent("properties"),
                                           resolvingAgainstBaseURL: false)
 
-        urlComponents?.queryItems = [URLQueryItem(name: "user", value: userID)]
+        urlComponents?.queryItems = [URLQueryItem(name: "user", value: web2waveUserId)]
 
         guard let url = urlComponents?.url else {
             fatalError("Invalid URL components")
@@ -132,7 +132,7 @@ public class Web2Wave: @unchecked Sendable {
         }
     }
 
-    public func updateUserProperty(userID: String, property: String, value: String) async -> Result<Void, Error> {
+    public func updateUserProperty(web2waveUserId: String, property: String, value: String) async -> Result<Void, Error> {
         
         assert(nil != apiKey, "You have to initialize apiKey before use")
         
@@ -141,7 +141,7 @@ public class Web2Wave: @unchecked Sendable {
                                                             .appendingPathComponent("properties"),
                                           resolvingAgainstBaseURL: false)
 
-        urlComponents?.queryItems = [URLQueryItem(name: "user", value: userID)]
+        urlComponents?.queryItems = [URLQueryItem(name: "user", value: web2waveUserId)]
 
         guard let url = urlComponents?.url else {
             #if DEBUG
@@ -196,15 +196,15 @@ public class Web2Wave: @unchecked Sendable {
         }
     }
 
-    public func setRevenuecatProfileID(appUserID: String, revenueCatProfileID: String) async -> Result<Void, Error> {
-        return await self.updateUserProperty(userID: appUserID, property: "revenuecat_profile_id", value: revenueCatProfileID)
+    public func setRevenuecatProfileID(web2waveUserId: String, revenueCatProfileID: String) async -> Result<Void, Error> {
+        return await self.updateUserProperty(web2waveUserId: web2waveUserId, property: "revenuecat_profile_id", value: revenueCatProfileID)
     }
 
-    public func setAdaptyProfileID(appUserID: String, adaptyProfileID: String) async -> Result<Void, Error> {
-        return  await updateUserProperty(userID: appUserID, property: "adapty_profile_id", value: adaptyProfileID)
+    public func setAdaptyProfileID(web2waveUserId: String, adaptyProfileID: String) async -> Result<Void, Error> {
+        return  await updateUserProperty(web2waveUserId: web2waveUserId, property: "adapty_profile_id", value: adaptyProfileID)
     }
 
-    public func setQonversionProfileID(appUserID: String, qonversionProfileID: String) async -> Result<Void, Error> {
-        return  await updateUserProperty(userID: appUserID, property: "qonversion_profile_id", value: qonversionProfileID)
+    public func setQonversionProfileID(web2waveUserId: String, qonversionProfileID: String) async -> Result<Void, Error> {
+        return  await updateUserProperty(web2waveUserId: web2waveUserId, property: "qonversion_profile_id", value: qonversionProfileID)
     }
 }
