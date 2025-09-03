@@ -213,7 +213,16 @@ public class Web2Wave: @unchecked Sendable {
     @MainActor public func showWebView(currentVC: UIViewController?, urlString: String, topOffset: CGFloat = 0, bottomOffset: CGFloat = 0, delegate: Web2WaveWebListener) {
         guard let currentVC = currentVC else { return }
         
-        let finalUrlString = urlString + "?webview_ios=1" + "&top_padding=\(Int(topOffset))" + "&bottom_padding=\(Int(bottomOffset))"
+        var components = URLComponents(string: urlString)
+        var queryItems = components?.queryItems ?? []
+        queryItems.append(contentsOf: [
+            URLQueryItem(name: "webview_ios", value: "1"),
+            URLQueryItem(name: "top_padding", value: "\(Int(topOffset))"),
+            URLQueryItem(name: "bottom_padding", value: "\(Int(bottomOffset))")
+        ])
+        components?.queryItems = queryItems
+        guard let finalUrlString = components?.url?.absoluteString else { return }
+        
         let webViewController = WebViewVC(delegate: delegate, urlStr: finalUrlString)
         webViewController.modalPresentationStyle = .fullScreen
         if let navController = currentVC.navigationController {
