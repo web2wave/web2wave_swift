@@ -98,6 +98,33 @@ let _ = await Web2Wave.shared.setQonversionProfileID(
 
 ```
 
+### Working with quiz or landing web page
+```swift
+
+//Extend Web2WaveWebListener class to receive events
+extension ViewController: Web2WaveWebListener {
+    func onEvent(event: String, data: [String : Any]?) {
+        print("Event received: \(event), data: \(data ?? [:])")
+    }
+    
+    func onClose(data: [String : Any]?) {
+        print("WebView closed with data: \(data ?? [:])")
+        Web2Wave.shared.closeWebView(currentVC: self)
+    }
+    
+    func onQuizFinished(data: [String : Any]?) {
+        print("Quiz finished! Result: \(data ?? [:])")
+        Web2Wave.shared.closeWebView(currentVC: self)
+    }
+}
+
+//Open web page with your url
+Web2Wave.shared.showWebView(currentVC: self, urlString: url, topOffset: topOffset, bottomOffset: bottomOffset, delegate: self)
+
+//Close web page
+Web2Wave.shared.closeWebView(currentVC: self)
+```
+
 ## API Reference
 
 ### `Web2Wave.shared`
