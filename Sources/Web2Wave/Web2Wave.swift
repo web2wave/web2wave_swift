@@ -6,15 +6,18 @@
 //
 
 import Foundation
+import AppsFlyerLib
+import RevenueCat
 import UIKit
 
-public class Web2Wave: @unchecked Sendable {
+public class Web2Wave: NSObject, @unchecked Sendable  {
     
     public static let shared = Web2Wave()
     
     private let baseURL: URL = URL(string: "https://api.web2wave.com")!
     public var apiKey: String?
-    public var urlString: String?
+    private var onFailure: ((String) -> Void)?
+    private var onSuccess: ((String) -> Void)?
     
     public func fetchSubscriptionStatus(web2waveUserId: String) async -> [String: Any]? {
         
@@ -239,6 +242,72 @@ public class Web2Wave: @unchecked Sendable {
             navController.popViewController(animated: true)
         } else {
             currentVC.dismiss(animated: true)
+        }
+    }
+}
+
+//MARK: AppsFlyer setup
+extension Web2Wave: DeepLinkDelegate {
+    public func setupAppsFlyerLib(revenuecatPublicApiKey: String?, appleAppID: String?, appsFlyerDevKey: String?, onSuccess: @escaping (String) -> Void, onFailure: @escaping (String) -> Void) {
+        self.onSuccess = onSuccess
+        self.onFailure = onFailure
+        
+        guard let appleAppID = appleAppID, let appsFlyerDevKey = appsFlyerDevKey,  let revenuecatPublicApiKey = revenuecatPublicApiKey else {
+            print("Missing required parameter for AppsFlyer setup")
+            self.onFailure?("Missing required parameter for AppsFlyer setup")
+            return
+        }
+        
+        AppsFlyerLib.shared().appsFlyerDevKey = appsFlyerDevKey
+        AppsFlyerLib.shared().appleAppID = appleAppID
+        
+        Purchases.configure(withAPIKey: revenuecatPublicApiKey)
+        AppsFlyerLib.shared().deepLinkDelegate = self
+        
+        AppsFlyerLib.shared().start()
+        
+    }
+    
+    // MARK: - DeepLinkDelegate
+    /// Called when AppsFlyer resolves a deep link.
+    public func didResolveDeepLink(_ result: DeepLinkResult) {
+        if case .found = result.status, let deepLink = result.deepLink {
+            handleDeepLink(deepLink)
+        } else {
+            let errorMessage = result.error?.localizedDescription ?? "Deep link not found"
+            onFailure?(errorMessage)
+        }
+    }
+    
+    private func handleDeepLink(_ deepLink: DeepLink) {
+        guard let deepLinkValue = deepLink.deeplinkValue,
+              let userData = deepLinkValue.data(using: .utf8),
+              let userDict = try? JSONSerialization.jsonObject(with: userData) as? [String: Any],
+              let extractedUserId = userDict["user_id"] as? String else {
+            print("Failed to parse deep_link_value")
+            onFailure?("Failed to parse deep_link_value")
+            return
+        }
+        print("User ID from deep link: \(extractedUserId)")
+        fetchRevenueCatAppUserID(userId: extractedUserId)
+    }
+    
+    private func fetchRevenueCatAppUserID(userId: String) {
+        let appUserID = Purchases.shared.appUserID
+        print("RevenueCat App User ID: \(appUserID)")
+        Task {
+            await self.sendAppUserIDToWeb2Wave(userId, appUserID)
+        }
+    }
+    
+    private func sendAppUserIDToWeb2Wave(_ userId: String, _ appUserID: String) async {
+        switch await Web2Wave.shared.setRevenuecatProfileID(web2waveUserId: userId, revenueCatProfileID: appUserID) {
+        case .success:
+            print("Successfully sent RevenueCat ID to Web2Wave API")
+            onSuccess?("Successfully sent RevenueCat ID to Web2Wave API")
+        case .failure(let error):
+            print("Error sending data to Web2Wave API: \(error)")
+            onFailure?("Error sending data to Web2Wave API: \(error)")
         }
     }
 }
