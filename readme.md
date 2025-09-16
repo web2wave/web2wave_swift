@@ -98,6 +98,30 @@ let _ = await Web2Wave.shared.setQonversionProfileID(
 
 ```
 
+
+### Extracting user data 
+
+To extract user data from AppsFlyer deeplinks, you need a deeplink handling mechanism. If you are using setupAppsFlyerLib(...), deeplink handling is automatically included.
+
+
+```swift
+
+//Setup AppsFlyer and RevenueCat
+Web2Wave.shared.setupAppsFlyerLib(
+    revenuecatPublicApiKey: "api-key",
+    appleAppID: "apple-app-id",
+    appsFlyerDevKey: "appsflyer-dev-key"
+) { userID in
+    //Success callback: returns userID if everything was successful
+    print(userID)
+} onFailure: { error in
+    //Failure callback: returns an error
+    print(error)
+}
+
+```
+If you have already set up AppsFlyer elsewhere in your app, you can use setRevenuecatProfileID(...) instead. However, in that case, you must manually extract the deeplink user data from AppsFlyer's callbacks.
+
 ### Working with quiz or landing web page
 ```swift
 
@@ -145,8 +169,11 @@ Retrieves all properties associated with a user.
 #### `updateUserProperty(web2waveUserId: String, property: String, value: String) async -> Result<Void, Error>`
 Updates a specific property for a user.
 
+#### `setupAppsFlyerLib(revenuecatPublicApiKey: String?, appleAppID: String?, appsFlyerDevKey: String?, onSuccess: @escaping (String) -> Void, onFailure: @escaping (String) -> Void)`
+Setup the AppsFlyer deeplink handling and set the RevenueCat profileID
+
 #### `setRevenuecatProfileID(web2waveUserId: String, revenueCatProfileID: String) -> Void`
-Set Revenuecat profileID
+If you have manually setup AppsFlyer, use this to set Revenuecat profileID instead
 
 #### `setAdaptyProfileID(web2waveUserId: String, adaptyProfileID: String) -> Void`
 Set Adapty profileID

@@ -301,10 +301,10 @@ extension Web2Wave: DeepLinkDelegate {
     }
     
     private func sendAppUserIDToWeb2Wave(_ userId: String, _ appUserID: String) async {
-        switch await Web2Wave.shared.setRevenuecatProfileID(web2waveUserId: userId, revenueCatProfileID: appUserID) {
+        switch await self.setRevenuecatProfileID(web2waveUserId: userId, revenueCatProfileID: appUserID) {
         case .success:
             print("Successfully sent RevenueCat ID to Web2Wave API")
-            onSuccess?("Successfully sent RevenueCat ID to Web2Wave API")
+            onSuccess?(userId)
         case .failure(let error):
             print("Error sending data to Web2Wave API: \(error)")
             onFailure?("Error sending data to Web2Wave API: \(error)")
