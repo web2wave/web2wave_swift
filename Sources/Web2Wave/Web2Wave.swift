@@ -248,6 +248,16 @@ public class Web2Wave: NSObject, @unchecked Sendable  {
 
 //MARK: AppsFlyer setup
 extension Web2Wave: DeepLinkDelegate {
+    /// Use this if you already have an `AppsFlyerLib` instance configured.
+    public func setupAppsFlyerLib(appsFlyer: AppsFlyerLib, onSuccess: @escaping (String) -> Void, onFailure: @escaping (String) -> Void) {
+        self.onSuccess = onSuccess
+        self.onFailure = onFailure
+        
+        appsFlyer.deepLinkDelegate = self
+        appsFlyer.start()
+    }
+    
+    /// Use this if you want the library to configure `AppsFlyerLib` and `RevenueCat` for you.
     public func setupAppsFlyerLib(revenuecatPublicApiKey: String?, appleAppID: String?, appsFlyerDevKey: String?, onSuccess: @escaping (String) -> Void, onFailure: @escaping (String) -> Void) {
         self.onSuccess = onSuccess
         self.onFailure = onFailure
@@ -279,7 +289,8 @@ extension Web2Wave: DeepLinkDelegate {
         }
     }
     
-    private func handleDeepLink(_ deepLink: DeepLink) {
+    /// If you have already set up the AppsFlyer delegate, use this function to handle data extraction.
+    public func handleDeepLink(_ deepLink: DeepLink) {
         guard let deepLinkValue = deepLink.deeplinkValue,
               let userData = deepLinkValue.data(using: .utf8),
               let userDict = try? JSONSerialization.jsonObject(with: userData) as? [String: Any],
