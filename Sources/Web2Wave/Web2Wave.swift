@@ -210,7 +210,7 @@ public class Web2Wave: @unchecked Sendable {
         return  await updateUserProperty(web2waveUserId: web2waveUserId, property: "qonversion_profile_id", value: qonversionProfileID)
     }
     
-    @MainActor public func showWebView(currentVC: UIViewController?, urlString: String, topOffset: CGFloat = 0, bottomOffset: CGFloat = 0, delegate: Web2WaveWebListener) {
+    @MainActor public func showWebView(currentVC: UIViewController?, urlString: String, topOffset: CGFloat = 0, bottomOffset: CGFloat = 0, delegate: Web2WaveWebListener, backgroundColor: UIColor? = nil) {
         guard let currentVC = currentVC else { return }
         
         var components = URLComponents(string: urlString)
@@ -223,7 +223,7 @@ public class Web2Wave: @unchecked Sendable {
         components?.queryItems = queryItems
         guard let finalUrlString = components?.url?.absoluteString else { return }
         
-        let webViewController = WebViewVC(delegate: delegate, urlStr: finalUrlString)
+        let webViewController = WebViewVC(delegate: delegate, urlStr: finalUrlString, backgroundColor: backgroundColor)
         webViewController.modalPresentationStyle = .fullScreen
         if let navController = currentVC.navigationController {
             navController.pushViewController(webViewController, animated: true)

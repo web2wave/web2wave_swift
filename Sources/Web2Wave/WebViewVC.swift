@@ -12,13 +12,15 @@ class WebViewVC: UIViewController {
     
     public var urlStr: String = ""
     public weak var delegate: Web2WaveWebListener?
+    private var backgroundColor: UIColor?
     
     private var webView: WKWebView!
             
-    init(delegate: Web2WaveWebListener, urlStr: String) {
+    init(delegate: Web2WaveWebListener, urlStr: String, backgroundColor: UIColor?) {
         super.init(nibName: nil, bundle: nil)
         self.delegate = delegate
-        self.urlStr = urlStr     
+        self.urlStr = urlStr
+        self.backgroundColor = backgroundColor
     }
     
     required init?(coder: NSCoder) {
@@ -55,6 +57,12 @@ class WebViewVC: UIViewController {
     private func setupWebView() {
         webView = WKWebView(frame: .zero, configuration: self.getWKWebViewConfiguration())
         webView.navigationDelegate = self
+        
+        if let backgroundColor = backgroundColor {
+            webView.backgroundColor = backgroundColor
+            webView.isOpaque = false
+        }
+        
         view.addSubview(webView)
         webView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -106,5 +114,8 @@ extension WebViewVC: WKNavigationDelegate, WKScriptMessageHandler {
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         print("WebView did finish loading.")
+        webView.isOpaque = true
+        //TODO: Check it
+        //webView.backgroundColor = .clear
     }
 }
