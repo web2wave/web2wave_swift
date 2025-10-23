@@ -119,11 +119,19 @@ extension ViewController: Web2WaveWebListener {
 }
 
 //Open web page with your url
-Web2Wave.shared.showWebView(currentVC: self, urlString: url, topOffset: topOffset, bottomOffset: bottomOffset, delegate: self)
+Web2Wave.shared.showWebView(
+    currentVC: self,
+    urlString: url,
+    topOffset: topOffset,
+    bottomOffset: bottomOffset,
+    delegate: self,
+    backgroundColor: backgroundColor
+)
 
 //Close web page
 Web2Wave.shared.closeWebView(currentVC: self)
 ```
+The backgroundColor parameter in showWebView function is optional. If not provided, the default background color will be white.
 
 ## API Reference
 
