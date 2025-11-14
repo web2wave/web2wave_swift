@@ -115,7 +115,5 @@ extension WebViewVC: WKNavigationDelegate, WKScriptMessageHandler {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         print("WebView did finish loading.")
         webView.isOpaque = true
-        //TODO: Check it
-        //webView.backgroundColor = .clear
     }
 }
