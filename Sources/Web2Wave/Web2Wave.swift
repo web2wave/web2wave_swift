@@ -112,18 +112,9 @@ public class Web2Wave: @unchecked Sendable {
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
             
-            guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
-                  let responseDict = jsonObject as? [String: Any],
-                  let properties = responseDict["properties"] as? [[String: String]]
-            else {
-                print("Failed to parse properties response")
-                return nil
-            }
-            
-            let resultDict = properties.reduce(into: [String: String]()) { dict, item in
-                if let key = item["property"], let value = item["value"] {
-                    dict[key] = value
-                }
+            let decodedResponse = try JSONDecoder().decode(PropertiesResponse.self, from: data)
+            let resultDict = decodedResponse.properties.reduce(into: [String: String]()) { dict, item in
+                dict[item.key] = item.value ?? ""
             }
             
             return resultDict
