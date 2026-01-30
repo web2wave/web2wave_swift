@@ -36,6 +36,9 @@ public class Web2Wave: @unchecked Sendable {
         request.setValue(apiKey!, forHTTPHeaderField: "api-key")
         request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        request.setValue(Headers.screenSize(), forHTTPHeaderField: "screen_size")
+        request.setValue(Headers.timezone(), forHTTPHeaderField: "timezone")
+        request.setValue(Headers.osVersion(), forHTTPHeaderField: "os_version")
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
@@ -108,6 +111,9 @@ public class Web2Wave: @unchecked Sendable {
         request.setValue(apiKey!, forHTTPHeaderField: "api-key")
         request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        request.setValue(Headers.screenSize(), forHTTPHeaderField: "screen_size")
+        request.setValue(Headers.timezone(), forHTTPHeaderField: "timezone")
+        request.setValue(Headers.osVersion(), forHTTPHeaderField: "os_version")
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
@@ -158,6 +164,10 @@ public class Web2Wave: @unchecked Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        request.setValue(Headers.screenSize(), forHTTPHeaderField: "screen_size")
+        request.setValue(Headers.timezone(), forHTTPHeaderField: "timezone")
+        request.setValue(Headers.osVersion(), forHTTPHeaderField: "os_version")
+        
         request.httpBody = jsonData
         
         do {
@@ -186,6 +196,46 @@ public class Web2Wave: @unchecked Sendable {
             
         } catch {
             return .failure(error)
+        }
+    }
+    
+    public func identify() async -> [String: Any]? {
+        assert(nil != apiKey, "You have to initialize apiKey before use")
+        
+        var urlComponents = URLComponents(url: baseURL.appendingPathComponent("api")
+            .appendingPathComponent("user")
+            .appendingPathComponent("identify"),
+                                          resolvingAgainstBaseURL: false)
+        
+        guard let url = urlComponents?.url else {
+            print("Invalid URL components")
+            return nil
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue(apiKey!, forHTTPHeaderField: "api-key")
+        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+        request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        request.setValue(Headers.screenSize(), forHTTPHeaderField: "screen_size")
+        request.setValue(Headers.timezone(), forHTTPHeaderField: "timezone")
+        request.setValue(Headers.osVersion(), forHTTPHeaderField: "os_version")
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            
+            guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+                  let responseDict = jsonObject as? [String: Any]
+            else {
+                print("Failed to parse subscription response")
+                return nil
+            }
+            
+            return responseDict
+            
+        } catch {
+            print("Failed to fetch : \(error.localizedDescription)")
+            return nil
         }
     }
     

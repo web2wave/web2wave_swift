@@ -7,6 +7,7 @@ Web2Wave is a lightweight Swift package that provides a simple interface for man
 - Fetch subscription status for users
 - Check for active subscriptions
 - Manage user properties
+- Identify users via device fingerprinting
 - Set third-parties profiles
 - Thread-safe singleton design
 - Async/await API support
@@ -65,6 +66,12 @@ case .success:
 case .failure(let error):
     print("Failed to update property: \(error)")
 }
+```
+
+### Identify users via device fingerprinting
+```swift
+// Identify
+let data = await Web2Wave.shared.identify()
 ```
 
 ### Managing third-party profiles
@@ -152,6 +159,9 @@ Retrieves all properties associated with a user.
 
 #### `updateUserProperty(web2waveUserId: String, property: String, value: String) async -> Result<Void, Error>`
 Updates a specific property for a user.
+
+#### `identify() async -> [String: Any]?`
+Identifies a user using the device fingerprint and returns identification metadata.
 
 #### `setRevenuecatProfileID(web2waveUserId: String, revenueCatProfileID: String) -> Void`
 Set Revenuecat profileID

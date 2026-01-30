@@ -5,6 +5,8 @@
 //  Created by Mina Djuric on 19.8.25..
 //
 
+import UIKit
+
 public protocol Web2WaveWebListener: AnyObject {
     func onEvent(event: String, data: [String: Any]?)
     func onClose(data: [String: Any]?)
@@ -58,5 +60,29 @@ struct PropertiesResponse: Decodable {
             return
         }
         properties = []
+    }
+}
+
+struct Headers {
+    static func screenSize() -> String {
+        let size = UIScreen.main.nativeBounds.size
+        
+        let width = Int(size.width)
+        let height = Int(size.height)
+        return "\(width)x\(height)"
+    }
+    
+    static func timezone() -> String {
+        let tz = TimeZone.current
+        let seconds = tz.secondsFromGMT()
+        let sign = seconds >= 0 ? "+" : "-"
+        let absSeconds = abs(seconds)
+        let hours = absSeconds / 3600
+        let minutes = (absSeconds % 3600) / 60
+        return String(format: "UTC%@%02d:%02d", sign, hours, minutes)
+    }
+    
+    static func osVersion() -> String {
+        UIDevice.current.systemVersion
     }
 }
