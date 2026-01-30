@@ -36,8 +36,9 @@ public class Web2Wave: @unchecked Sendable {
         request.setValue(apiKey!, forHTTPHeaderField: "api-key")
         request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("no-cache", forHTTPHeaderField: "Pragma")
-        request.setValue("screen_size", forHTTPHeaderField: Headers.screenSize())
-        request.setValue("timezone", forHTTPHeaderField: Headers.timezone())
+        request.setValue(Headers.screenSize(), forHTTPHeaderField: "screen_size")
+        request.setValue(Headers.timezone(), forHTTPHeaderField: "timezone")
+        request.setValue(Headers.osVersion(), forHTTPHeaderField: "os_version")
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
@@ -112,6 +113,7 @@ public class Web2Wave: @unchecked Sendable {
         request.setValue("no-cache", forHTTPHeaderField: "Pragma")
         request.setValue(Headers.screenSize(), forHTTPHeaderField: "screen_size")
         request.setValue(Headers.timezone(), forHTTPHeaderField: "timezone")
+        request.setValue(Headers.osVersion(), forHTTPHeaderField: "os_version")
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
@@ -162,8 +164,10 @@ public class Web2Wave: @unchecked Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("no-cache", forHTTPHeaderField: "Pragma")
-        request.setValue("screen_size", forHTTPHeaderField: Headers.screenSize())
-        request.setValue("timezone", forHTTPHeaderField: Headers.timezone())
+        request.setValue(Headers.screenSize(), forHTTPHeaderField: "screen_size")
+        request.setValue(Headers.timezone(), forHTTPHeaderField: "timezone")
+        request.setValue(Headers.osVersion(), forHTTPHeaderField: "os_version")
+        
         request.httpBody = jsonData
         
         do {
@@ -215,6 +219,7 @@ public class Web2Wave: @unchecked Sendable {
         request.setValue("no-cache", forHTTPHeaderField: "Pragma")
         request.setValue(Headers.screenSize(), forHTTPHeaderField: "screen_size")
         request.setValue(Headers.timezone(), forHTTPHeaderField: "timezone")
+        request.setValue(Headers.osVersion(), forHTTPHeaderField: "os_version")
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)

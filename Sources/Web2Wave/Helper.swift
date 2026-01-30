@@ -66,7 +66,7 @@ struct PropertiesResponse: Decodable {
 struct Headers {
     static func screenSize() -> String {
         let size = UIScreen.main.nativeBounds.size
-
+        
         let width = Int(size.width)
         let height = Int(size.height)
         return "\(width)x\(height)"
@@ -80,5 +80,9 @@ struct Headers {
         let hours = absSeconds / 3600
         let minutes = (absSeconds % 3600) / 60
         return String(format: "UTC%@%02d:%02d", sign, hours, minutes)
+    }
+    
+    static func osVersion() -> String {
+        UIDevice.current.systemVersion
     }
 }
