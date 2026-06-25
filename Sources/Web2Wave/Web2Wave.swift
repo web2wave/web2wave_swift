@@ -16,6 +16,66 @@ public class Web2Wave: @unchecked Sendable {
     public var apiKey: String?
     public var urlString: String?
     
+    private func getScreenSize() -> String {
+        let screen = UIScreen.main.bounds
+        return "\(Int(screen.width))x\(Int(screen.height))"
+    }
+    
+    private func getTimezone() -> String {
+        let offset = TimeZone.current.secondsFromGMT()
+        let totalMinutes = offset / 60
+        let hours = totalMinutes / 60
+        let minutes = abs(totalMinutes % 60)
+        let sign = hours >= 0 ? "+" : "-"
+        return String(format: "UTC%@%02d:%02d", sign, abs(hours), minutes)
+    }
+    
+    private func getOSVersion() -> String {
+        "iOS \(UIDevice.current.systemVersion)"
+    }
+    
+    private func applyFingerprintHeaders(to request: inout URLRequest) {
+        request.setValue(apiKey!, forHTTPHeaderField: "api-key")
+        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+        request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        request.setValue("iOS", forHTTPHeaderField: "platform")
+        request.setValue(getScreenSize(), forHTTPHeaderField: "screen_size")
+        request.setValue(getTimezone(), forHTTPHeaderField: "timezone")
+        request.setValue(getOSVersion(), forHTTPHeaderField: "os_version")
+    }
+    
+    public func identify() async -> [String: Any]? {
+        assert(nil != apiKey, "You have to initialize apiKey before use")
+        
+        let url = baseURL.appendingPathComponent("api")
+            .appendingPathComponent("user")
+            .appendingPathComponent("identify")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        applyFingerprintHeaders(to: &request)
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                return nil
+            }
+            
+            guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+                  let responseDict = jsonObject as? [String: Any]
+            else {
+                print("Failed to parse identify response")
+                return nil
+            }
+            
+            return responseDict
+        } catch {
+            print("Failed to identify user: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
     public func fetchSubscriptionStatus(web2waveUserId: String) async -> [String: Any]? {
         
         assert(nil != apiKey, "You have to initialize apiKey before use")
@@ -33,9 +93,7 @@ public class Web2Wave: @unchecked Sendable {
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue(apiKey!, forHTTPHeaderField: "api-key")
-        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
-        request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        applyFingerprintHeaders(to: &request)
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
@@ -105,9 +163,7 @@ public class Web2Wave: @unchecked Sendable {
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue(apiKey!, forHTTPHeaderField: "api-key")
-        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
-        request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        applyFingerprintHeaders(to: &request)
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
@@ -154,10 +210,8 @@ public class Web2Wave: @unchecked Sendable {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue(apiKey!, forHTTPHeaderField: "api-key")
+        applyFingerprintHeaders(to: &request)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
-        request.setValue("no-cache", forHTTPHeaderField: "Pragma")
         request.httpBody = jsonData
         
         do {

@@ -7,6 +7,7 @@ Web2Wave is a lightweight Swift package that provides a simple interface for man
 - Fetch subscription status for users
 - Check for active subscriptions
 - Manage user properties
+- Identify web2wave user via device fingerprinting
 - Set third-parties profiles
 - Thread-safe singleton design
 - Async/await API support
@@ -64,6 +65,36 @@ case .success:
     print("Property updated successfully")
 case .failure(let error):
     print("Failed to update property: \(error)")
+}
+```
+
+### Identify web2wave user
+
+The `identify()` method identifies a user using device fingerprinting and returns identification metadata including the `user_id`. Use it when a deeplink is unavailable.
+
+```swift
+if let identificationData = await Web2Wave.shared.identify(),
+   let success = identificationData["success"] as? Int, success == 1,
+   let userId = identificationData["user_id"] as? String {
+    print("Identified user: \(userId)")
+
+    let _ = await Web2Wave.shared.setAdaptyProfileID(
+        web2waveUserId: userId,
+        adaptyProfileID: "{adaptyProfileID}"
+    )
+} else {
+    print("Failed to identify user")
+}
+```
+
+**Response format:**
+
+```json
+{
+  "success": 1,
+  "user_id": "identified_user_guid",
+  "match_method": "match_method_used",
+  "platform": "iOS"
 }
 ```
 
@@ -161,6 +192,9 @@ Set Adapty profileID
 
 #### `setQonversionProfileID(web2waveUserId: String, qonversionProfileID: String) -> Void`
 Set Qonversion ProfileID
+
+#### `identify() async -> [String: Any]?`
+Identifies a user using the device fingerprint and returns identification metadata.
 
 ## Requirements
 
