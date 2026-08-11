@@ -33,6 +33,19 @@ public class Web2Wave: @unchecked Sendable {
     private func getOSVersion() -> String {
         "iOS \(UIDevice.current.systemVersion)"
     }
+
+    /// Device model / machine id for fingerprinting (e.g. "iPhone15,2").
+    private func getDeviceModel() -> String? {
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        let mirror = Mirror(reflecting: systemInfo.machine)
+        let identifier = mirror.children.reduce("") { partial, element in
+            guard let value = element.value as? Int8, value != 0 else { return partial }
+            return partial + String(UnicodeScalar(UInt8(value)))
+        }
+        let trimmed = identifier.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
     
     private func applyFingerprintHeaders(to request: inout URLRequest) {
         request.setValue(apiKey!, forHTTPHeaderField: "api-key")
@@ -42,6 +55,9 @@ public class Web2Wave: @unchecked Sendable {
         request.setValue(getScreenSize(), forHTTPHeaderField: "screen_size")
         request.setValue(getTimezone(), forHTTPHeaderField: "timezone")
         request.setValue(getOSVersion(), forHTTPHeaderField: "os_version")
+        if let deviceModel = getDeviceModel() {
+            request.setValue(deviceModel, forHTTPHeaderField: "device_model")
+        }
     }
     
     public func identify() async -> [String: Any]? {

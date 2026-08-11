@@ -1,0 +1,7 @@
+## 1.1.0
+
+- Send `device_model` header for identify fingerprinting (utsname machine id, e.g. "iPhone15,2")
+
+## 1.0.1
+
+- Fingerprint headers and `identify()` deferred deeplink support
