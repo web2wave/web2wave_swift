@@ -271,6 +271,14 @@ public class Web2Wave: @unchecked Sendable {
         return  await updateUserProperty(web2waveUserId: web2waveUserId, property: "qonversion_profile_id", value: qonversionProfileID)
     }
     
+    public func setApphudProfileID(web2waveUserId: String, apphudProfileID: String) async -> Result<Void, Error> {
+        return await updateUserProperty(web2waveUserId: web2waveUserId, property: "apphud_profile_id", value: apphudProfileID)
+    }
+    
+    public func setSuperwallProfileID(web2waveUserId: String, superwallProfileID: String) async -> Result<Void, Error> {
+        return await updateUserProperty(web2waveUserId: web2waveUserId, property: "superwall_profile_id", value: superwallProfileID)
+    }
+    
     @MainActor public func showWebView(currentVC: UIViewController?, urlString: String, topOffset: CGFloat = 0, bottomOffset: CGFloat = 0, delegate: Web2WaveWebListener, backgroundColor: UIColor? = nil) {
         guard let currentVC = currentVC else { return }
         

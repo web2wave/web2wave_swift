@@ -127,6 +127,18 @@ let _ = await Web2Wave.shared.setQonversionProfileID(
     qonversionProfileID: "{qonversionProfileID}"
 )
 
+// Save Apphud profileID
+let _ = await Web2Wave.shared.setApphudProfileID(
+    web2waveUserId: "user123",
+    apphudProfileID: "{apphudProfileID}"
+)
+
+// Save Superwall profileID (Superwall.shared.userId after identify())
+let _ = await Web2Wave.shared.setSuperwallProfileID(
+    web2waveUserId: "user123",
+    superwallProfileID: "{superwallProfileID}"
+)
+
 ```
 
 ### Working with quiz or landing web page
@@ -192,6 +204,12 @@ Set Adapty profileID
 
 #### `setQonversionProfileID(web2waveUserId: String, qonversionProfileID: String) -> Void`
 Set Qonversion ProfileID
+
+#### `setApphudProfileID(web2waveUserId: String, apphudProfileID: String) -> Void`
+Set Apphud profileID
+
+#### `setSuperwallProfileID(web2waveUserId: String, superwallProfileID: String) -> Void`
+Set Superwall profileID
 
 #### `identify() async -> [String: Any]?`
 Resolves a user via web2wave deferred deeplinks. Alternative to MMP-based deeplink attribution.
