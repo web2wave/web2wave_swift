@@ -60,6 +60,36 @@ public class Web2Wave: @unchecked Sendable {
         }
     }
     
+    /// Extracts the server's error text from an error body (`{"error":1,"error_msg":"..."}`),
+    /// falling back to `message`, then to a generic status-code message.
+    private func apiErrorMessage(from data: Data, statusCode: Int) -> String {
+        if let dict = (try? JSONSerialization.jsonObject(with: data, options: [])) as? [String: Any] {
+            if let msg = dict["error_msg"] as? String, !msg.isEmpty { return msg }
+            if let msg = dict["message"] as? String, !msg.isEmpty { return msg }
+        }
+        return "Unexpected status code: \(statusCode)"
+    }
+
+    /// Builds an `NSError` in the `Web2WaveError` domain carrying the server's error text.
+    /// `userInfo["required_scope"]` is set when the API key lacks a scope (HTTP 403).
+    private func apiError(from data: Data, statusCode: Int, code: Int) -> NSError {
+        var userInfo: [String: Any] = [NSLocalizedDescriptionKey: apiErrorMessage(from: data, statusCode: statusCode)]
+        if let dict = (try? JSONSerialization.jsonObject(with: data, options: [])) as? [String: Any],
+           let scope = dict["required_scope"] as? String {
+            userInfo["required_scope"] = scope
+        }
+        return NSError(domain: "Web2WaveError", code: code, userInfo: userInfo)
+    }
+
+    private func isSuccessStatus(_ response: URLResponse) -> Bool {
+        guard let http = response as? HTTPURLResponse else { return false }
+        return (200..<300).contains(http.statusCode)
+    }
+
+    private func statusCode(of response: URLResponse) -> Int {
+        (response as? HTTPURLResponse)?.statusCode ?? 0
+    }
+
     public func identify() async -> [String: Any]? {
         assert(nil != apiKey, "You have to initialize apiKey before use")
         
@@ -75,6 +105,7 @@ public class Web2Wave: @unchecked Sendable {
             let (data, response) = try await URLSession.shared.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Failed to identify user: \(apiErrorMessage(from: data, statusCode: statusCode(of: response)))")
                 return nil
             }
             
@@ -112,7 +143,11 @@ public class Web2Wave: @unchecked Sendable {
         applyFingerprintHeaders(to: &request)
         
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if !isSuccessStatus(response) {
+                print("Failed to fetch subscription status: \(apiErrorMessage(from: data, statusCode: statusCode(of: response)))")
+            }
             
             guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
                   let responseDict = jsonObject as? [String: Any]
@@ -182,7 +217,14 @@ public class Web2Wave: @unchecked Sendable {
         applyFingerprintHeaders(to: &request)
         
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            // Error bodies ({"error":1,"error_msg":...}, e.g. 403 missing scope or 422 user not found)
+            // used to decode as an empty property list; report them as a failure instead.
+            guard isSuccessStatus(response) else {
+                print("Failed to fetch properties: \(apiErrorMessage(from: data, statusCode: statusCode(of: response)))")
+                return nil
+            }
             
             let decodedResponse = try JSONDecoder().decode(PropertiesResponse.self, from: data)
             let resultDict = decodedResponse.properties.reduce(into: [String: String]()) { dict, item in
@@ -233,26 +275,24 @@ public class Web2Wave: @unchecked Sendable {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                
-                guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
-                      let responseDict = jsonObject as? [String: Any],
-                      let success = responseDict["result"] as? String? else
-                {
-                    return .failure(NSError(domain: "Web2WaveError", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Smth wrong"]))
-                }
-                
-                if (success == "1") {
-                    return .success(())
-                }
-                else {
-                    return .failure(NSError(domain: "Web2WaveError", code: 1004, userInfo: [NSLocalizedDescriptionKey: "Smth wrong"]))
-                }
-                
-            } else {
-                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                return .failure(NSError(domain: "Web2WaveError", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Unexpected status code: \(statusCode)"]))
+            let code = statusCode(of: response)
+            guard isSuccessStatus(response) else {
+                // Surface the server's error_msg (e.g. a 403 when the API key lacks the required scope).
+                return .failure(apiError(from: data, statusCode: code, code: code))
             }
+            
+            guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+                  let responseDict = jsonObject as? [String: Any] else
+            {
+                return .failure(NSError(domain: "Web2WaveError", code: 1003, userInfo: [NSLocalizedDescriptionKey: "Invalid response from server"]))
+            }
+            
+            let result = responseDict["result"]
+            let isSuccess = (result as? String) == "1" || (result as? NSNumber)?.intValue == 1
+            if isSuccess {
+                return .success(())
+            }
+            return .failure(apiError(from: data, statusCode: code, code: 1004))
             
         } catch {
             return .failure(error)
